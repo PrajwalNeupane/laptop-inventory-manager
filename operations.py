@@ -48,6 +48,9 @@ class LaptopOperations:
         print(table_separator.center(screen_width))
     
     def generate_receipt(self, selected_laptops, customer_name, is_purchase=True, is_shipping=False):
+        total = 0
+        total_with_vat = 0 
+
         date_time = time.strftime('%Y-%m-%d %H:%M:%S')
         receipt_id = f"{int(time.time())}_multi"
 
@@ -90,14 +93,14 @@ class LaptopOperations:
         receipt += f"{'Total':<30}${round(total, 2):<10}\n"
         
         # Calculate and display VAT and Total
-        if is_purchase:
+        if not is_purchase:
             receipt += f"{'VAT (13%)':<30}${total * 0.13:<10}\n"
             total_with_vat = total * 1.13
             receipt += f"{'Total (with VAT)':<30}${round(total_with_vat, 2):<10}\n"
         
         if is_shipping:
             receipt += f"{'Shipping':<30}${500:<10}\n"
-            receipt += f"{'Total (with Shipping)':<30}${round(total_with_vat+500, 2):<10}\n"
+            receipt += f"{'Total (with Shipping)':<30}${round(total_with_vat + 500, 2):<10}\n"
 
         receipt += f"{'-' * 40}\n"
         receipt += f"{'Customer Name':<15}{customer_name:<25}\n"

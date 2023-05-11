@@ -7,7 +7,7 @@ def display_welcome_screen():
     print("\033[1;34;48m")
 
     # Define screen width
-    screen_width = 100
+    screen_width = 120
 
     print("\n" + "=" * screen_width)
     print("Welcome to the Laptop Shop".center(screen_width))
@@ -42,7 +42,7 @@ def main():
                     if laptop_id == -1:
                         break
                     quantity = int(input("Enter the quantity: "))
-                    selected_laptops.append((laptop_id, quantity))
+                    selected_laptops.append((laptop_id, quantity)) #tuple
                     laptop_operations.update_laptop(laptop_id, quantity, add=True)
 
                 laptop_operations.generate_receipt(selected_laptops, customer_name, is_purchase=True)
