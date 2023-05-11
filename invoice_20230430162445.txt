@@ -1,8 +1,0 @@
-Invoice_______________________________________________________
-Customer Name: PJ
-Laptop Name: Macbook Pro 16
-Brand: Razer
-Price: $1200.15
-Shipping cost: $1.0
-_______________________________________________________
-Total: $1201.15

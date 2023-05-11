@@ -1,9 +1,0 @@
-Invoice
-----------------------------------------------------------
-Customer Name: GJ
-Laptop Name: Razer Blade
-Brand: Alienware
-Price: $1394.82
-Shipping cost: $100.0
-(----------------------------------------------------------
-Total: $1494.82

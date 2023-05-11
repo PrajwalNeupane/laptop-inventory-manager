@@ -1,157 +1,90 @@
-import csv
-import datetime
 import os
+from operations import LaptopOperations
 
-# Define the inventory file's name
-INVENTORY_FILE = "inventory.csv"
+def display_welcome_screen():
 
-# Laptop class to hold laptop attributes
-class Laptop:
-    # Constructor to initialize laptop attributes
-    def __init__(self, name, brand, price, quantity, processor, graphics_card):
-        self.name = name
-        self.brand = brand
-        self.price = float(price)
-        self.quantity = int(quantity)
-        self.processor = processor
-        self.graphics_card = graphics_card
+    # Set text color to blue and bold
+    print("\033[1;34;48m")
 
-    # String representation of the laptop object
-    def __str__(self):
-        return f"{self.name}, {self.brand}, ${self.price}, {self.quantity}, {self.processor}, {self.graphics_card}"
+    # Define screen width
+    screen_width = 100
 
-# LaptopShop class to manage laptop inventory and sales
-class LaptopShop:
-    # Constructor initializes the inventory_file and reads the inventory
-    def __init__(self, inventory_file=INVENTORY_FILE):
-        self.inventory_file = inventory_file
-        self.inventory = self.read_inventory()
+    print("\n" + "=" * screen_width)
+    print("Welcome to the Laptop Shop".center(screen_width))
+    print("=" * screen_width + "\n")
 
-    # Read inventory from the CSV file
-    def read_inventory(self):
-        inventory = []
-        if os.path.exists(self.inventory_file):
-            with open(self.inventory_file, "r") as f:
-                reader = csv.reader(f)
-                next(reader)  # Skip the header row
-                for row in reader:
-                    if not row:  # Skip empty rows
-                        continue
+    # Reset text color to default
+    print("\033[0;37;48m")
+
+def main():
+    laptop_operations = LaptopOperations("laptops.txt")
+
+    # Create 'receipts' folder if it doesn't exist
+    if not os.path.exists("receipts"):
+        os.makedirs("receipts")
+
+    while True:
+        display_welcome_screen()
+        laptop_operations.display_laptops()
+        print("\nOptions:")
+        print("1. Purchase")
+        print("2. Sell")
+        print("3. Exit")
+        user_input = input("Enter your choice (1-3): ")
+
+        try:
+            if user_input == "1":
+                customer_name = input("Enter the customer name: ")
+                selected_laptops = []
+
+                while True:
+                    laptop_id = int(input("Enter laptop ID to purchase (-1 to finish): "))
+                    if laptop_id == -1:
+                        break
+                    quantity = int(input("Enter the quantity: "))
+                    selected_laptops.append((laptop_id, quantity))
+                    laptop_operations.update_laptop(laptop_id, quantity, add=True)
+
+                laptop_operations.generate_receipt(selected_laptops, customer_name, is_purchase=True)
+                print("Laptop stock updated after purchase.")
+            elif user_input == "2":
+                customer_name = input("Enter the customer name: ")
+                selected_laptops = []
+
+                while True:
                     try:
-                        laptop = Laptop(*row)
-                        inventory.append(laptop)
-                    except ValueError as e:
-                        print(f"Error creating Laptop object: {e}")
-        return inventory
-        # Update the inventory CSV file
-    def update_inventory(self):
-        with open(self.inventory_file, "w") as f:
-            writer = csv.writer(f)
-            for laptop in self.inventory:
-                writer.writerow([laptop.name, laptop.brand, laptop.price, laptop.quantity, laptop.processor, laptop.graphics_card])
+                        laptop_id = int(input("Enter laptop ID to sell (-1 to finish): "))
+                        if laptop_id == -1:
+                            break
+                        
+                        if laptop_id >= 0 and laptop_id < len(laptop_operations.laptops):
+                            quantity = int(input("Enter the quantity: "))
+                            selected_laptops.append((laptop_id, quantity))
+                            laptop_operations.update_laptop(laptop_id, quantity, add=False)
+                        else:
+                            print("Invalid laptop ID. Please try again.")
 
-    # Display the inventory of laptops
-    def display_inventory(self):
-        print("Available Laptops:")
-        print("Name, Brand, Price, Quantity, Processor, Graphics Card")
-        for laptop in self.inventory:
-            print(laptop)
+                    except ValueError:
+                        print("Invalid input. Please enter numbers only.")
+                    except IndexError:
+                        print("Laptop ID is out of range. Please try again.")
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
 
-    # Find a laptop by its name in the inventory
-    def find_laptop(self, laptop_name):
-        for laptop in self.inventory:
-            if laptop.name == laptop_name:
-                return laptop
-        return None
+                is_shipping = input("Include Shipping ($500) (y/n)")
+                if is_shipping.lower() == "y":
+                    laptop_operations.generate_receipt(selected_laptops, customer_name, is_purchase=False, is_shipping=True)
 
-    def buy_laptop(self):
-        print("Enter the details of the laptop to buy:")
-        name = input("Name: ")
-        brand = input("Brand: ")
-        price = self.get_float("Price: ")
-        quantity = int(input("Quantity: "))
-        processor = input("Processor: ")
-        graphics_card = input("Graphics Card: ")
-
-        new_laptop = Laptop(name, brand, price, quantity, processor, graphics_card)
-        self.inventory.append(new_laptop)
-        self.update_inventory()
-        print("Laptop added to inventory.")
-
-
-    # Sell a laptop and generate an invoice
-    def sell_laptop(self):
-        self.display_inventory()
-        laptop_name = input("Enter the name of the laptop to sell: ")
-        customer_name = input("Enter the name of the customer: ")
-        shipping_cost = self.get_float("Enter the shipping cost: ")
-
-        laptop = self.find_laptop(laptop_name)
-
-        if laptop:
-            if laptop.quantity > 0:
-                laptop.quantity -= 1
-                invoice_total = laptop.price + shipping_cost
-                self.create_invoice(laptop, customer_name, shipping_cost, invoice_total)
-                print("Laptop sold and invoice generated.")
-            else:
-                print("Sorry, the laptop is out of stock.")
-        else:
-            print("Laptop not found in inventory.")
-
-    # Get a float input from the user
-    @staticmethod
-    def get_float(prompt):
-        while True:
-            try:
-                value = float(input(prompt))
-                break
-            except ValueError:
-                print("Invalid input, please enter a valid number.")
-        return value
-
-    # Create an invoice for the laptop sale
-    @staticmethod
-    def create_invoice(laptop, customer_name, shipping_cost, invoice_total):
-        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        invoice_file = f"invoice_{timestamp}.txt"
-
-        with open(invoice_file, "w") as f:
-            f.write("Invoice\n")
-            f.write("----------------------------------------------------------\n")
-            f.write(f"Customer Name: {customer_name}\n")
-            f.write(f"Laptop Name: {laptop.name}\n")
-            f.write(f"Brand: {laptop.brand}\n")
-            f.write(f"Price: ${laptop.price}\n")
-            f.write(f"Shipping cost: ${shipping_cost}\n")
-            f.write("----------------------------------------------------------\n")
-            f.write(f"Total: ${invoice_total}\n")
-
-    # Run the main loop for the laptop shop
-    # Run the main loop for the laptop shop
-    def run(self):
-        while True:
-            print("\nOptions:")
-            print("1. Display inventory")
-            print("2. Buy laptop")
-            print("3. Sell laptop")
-            print("4. Quit")
-
-            choice = int(input("Enter your choice: "))
-
-            if choice == 1:
-                self.display_inventory()
-            elif choice == 2:
-                self.buy_laptop()
-            elif choice == 3:
-                self.sell_laptop()
-                self.update_inventory()
-            elif choice == 4:
+                print("Laptop stock updated after selling multiple laptop types.")
+            elif user_input == "3":
+                print("Thank you for using the laptop selling/buying system.")
                 break
             else:
-                print("Invalid choice. Please try again.")
+                print("Invalid input. Please try again.")
+        except ValueError:
+            print("Invalid input. Please enter numbers only.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
-# Main function to run the laptop shop
 if __name__ == "__main__":
-    shop = LaptopShop()
-    shop.run()
+    main()

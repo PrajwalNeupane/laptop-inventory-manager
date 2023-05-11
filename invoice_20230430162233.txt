@@ -1,6 +1,0 @@
-Customer Name: Jayesh Khanal
-Laptop Name: Alienware
-Brand: Dell
-Price: $2183.62
-Shipping cost: $80.0
-Total: $2263.62

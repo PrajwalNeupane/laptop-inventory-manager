@@ -1,6 +1,0 @@
-Invoice_______________________________________________________Customer Name: Jayesh Khanal
-Laptop Name: XPS
-Brand: Razer
-Price: $2766.01
-Shipping cost: $60.0
-_______________________________________________________Total: $2826.01
